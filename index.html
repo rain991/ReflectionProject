@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Reflection</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+
+        <script src="three.js"></script>
+		<script>
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+			var renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+            var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+            scene.add( light );
+
+            var light2 = new THREE.AmbientLight(0x333333); 
+            light2.position.set( light.position );
+            scene.add(light2);
+
+            var path = "textures/sb_frozen/napis/frozen_";      //wersja tekstur z napisami
+            var path = "textures/sb_frozen/frozen_";            //wersja tekstur bezx napisow
+            var format = '.jpg';
+            var urls = [
+                path + 'ft' + format, path + 'bk' + format,     //front, back (+x -x)
+                path + 'up' + format, path + 'dn' + format,      //up, down (+y -y)
+               path + 'rt' + format, path + 'lf' + format,     //right, left (+z, -z)
+            ];
+            var reflectionCube = new THREE.CubeTextureLoader().load( urls );
+            reflectionCube.format = THREE.RGBFormat;
+            scene.background = reflectionCube;
+
+
+			////////////////////////////
+            //Tworzenie geometrii
+            //
+            //
+
+            var sphere1 = new THREE.Mesh( new THREE.SphereGeometry(1,32,10), new THREE.MeshLambertMaterial( {color: Math.random() *0xffffff } ));
+            sphere1.material.envMap = reflectionCube;
+            sphere1.material.reflectivity = 0.7;
+            sphere1.position.x = -1.5;
+            sphere1.material.combine = THREE.MixOperation;
+            
+            var sphere2 = new THREE.Mesh( new THREE.SphereGeometry(1,32,32), new THREE.MeshLambertMaterial( {color: Math.random() *0xffffff } ));
+            sphere2.material.envMap = reflectionCube;
+            sphere2.material.reflectivity = 0.7;
+            sphere2.position.x = 1.5;
+            sphere2.material.combine = THREE.MixOperation;
+           
+            
+            scene.add(sphere1);
+            scene.add(sphere2);
+
+            var group = new THREE.Group();
+            addSpheresToGroup();
+            scene.add(group);
+
+            
+            var cubeCamera1 = new THREE.CubeCamera( 0.1, 10000, 128 );
+            cubeCamera1.position.x = -1.5;
+            sphere1.material.envMap = cubeCamera1.renderTarget;
+            scene.add( cubeCamera1 );
+
+
+            var cubeCamera2 = new THREE.CubeCamera( 0.1, 10000, 512 );
+            cubeCamera2.position.x = 1.5;
+            sphere2.material.envMap = cubeCamera2.renderTarget;
+            scene.add( cubeCamera2 );
+
+            
+            camera.position.z = 3;
+            camera.lookAt(scene.position);
+
+
+            //renderScene();
+            animate();
+
+
+
+
+            function renderScene(){
+
+                cubeCamera1.position.copy( sphere1.position );
+                cubeCamera1.update( renderer, scene );
+
+                cubeCamera2.position.copy( sphere2.position );
+                cubeCamera2.update( renderer, scene );
+
+			    renderer.render(scene, camera);
+            }
+
+			function animate() {
+                requestAnimationFrame( animate );
+                
+                group.rotation.z += 0.02;
+
+
+				renderScene();
+			};
+
+            function addSpheresToGroup()
+            {
+                var sphere = new THREE.Mesh( new THREE.SphereGeometry(0.3,32,32), new THREE.MeshLambertMaterial( {color: Math.random() *0xffffff } ));
+                sphere.material.envMap = reflectionCube;
+                sphere.material.reflectivity = 0.7;
+                sphere.material.combine = THREE.MixOperation;
+                sphere.position.x = 3;
+                
+                var s;
+                for(var i = 0; i < 20; i ++)
+                {
+                    s = sphere.clone();
+                    s.position.x = 2.9*Math.cos(i*10*Math.PI/180);
+                    s.position.y = 2.9*Math.sin(i*10*Math.PI/180);
+                    group.add(s);
+                }
+            }
+		</script>
+	</body>
+</html>
