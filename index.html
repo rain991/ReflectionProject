@@ -1,23 +1,64 @@
+<!--------------------------------------------------------------------------------
+	
+    Aplikacja three.js - 09 wzajemne odbicia
+                       rysujemy sfere ktory posluzy nam do prostych testow
+                       a wokol jest skybox
+                       Robimy material odbijajacy otoczenie
+                       moj skybox ze strony:
+                       http://www.custommapmakers.org/skyboxes.php
+	
+	
+	P.Kowalczyk 2018.11
+
+Zmiany:
+wersja orginalna							P.K. 12/11/2018
+
+-------------------------------------------------------------------------------->
+
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta charset=utf-8>
-		<title>Reflection</title>
+		<title>09 odbicia</title>
 		<style>
 			body { margin: 0; }
 		</style>
 	</head>
 	<body>
 
-        <script src="three.js"></script>
+        <script src="js/three.js"></script>
+        <script src="js/OrbitControls.js"></script>
 		<script>
 
+
+			////////////////////////////
+			//Tworzenie sceny, kamery, renderera
+			//
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+			//var renderer = new THREE.WebGLRenderer();
 			var renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
+            //renderer.setClearColor(new THREE.Color(0x404040));
+
+            ////////////////////////////
+            //Utworzenie kontrolera dzieki ktoremu mozna myszka zmieniac polozenie kamery na scenie
+            //
+            var controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+
+
+
+			////////////////////////////
+			//powiazanie renderera z <body>
+			//
 			document.body.appendChild( renderer.domElement );
 
+
+ 			////////////////////////////
+			//swiatla
+			//
             var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
             scene.add( light );
 
@@ -25,6 +66,13 @@
             light2.position.set( light.position );
             scene.add(light2);
 
+
+  
+           
+
+            ///////////////////////////////////////
+            //cubemap / skybox
+            //
             var path = "textures/sb_frozen/napis/frozen_";      //wersja tekstur z napisami
             var path = "textures/sb_frozen/frozen_";            //wersja tekstur bezx napisow
             var format = '.jpg';
@@ -63,7 +111,10 @@
             addSpheresToGroup();
             scene.add(group);
 
-            
+            //////////////////////////
+            //Tworzenie kamer
+            //Odkomentuj ten kod i kod ponizej aby dostac efekt wielokrotnych odbic
+            //
             var cubeCamera1 = new THREE.CubeCamera( 0.1, 10000, 128 );
             cubeCamera1.position.x = -1.5;
             sphere1.material.envMap = cubeCamera1.renderTarget;
@@ -101,6 +152,8 @@
                 requestAnimationFrame( animate );
                 
                 group.rotation.z += 0.02;
+
+                controls.update();
 
 
 				renderScene();
